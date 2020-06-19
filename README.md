@@ -11,6 +11,6 @@ Using sockets, connect to campus SMTP mail server. Then implement the smtp conve
 Using sockets, connect to a popular webmail server, like AOL mail server. Then perform the same task as Part-I and implement the smtp conversations in the python program `myExternalEmailClient.py` which will contact with the SMTP server to send your email to "your_email@gmail.com".
 
 ## Reference
-[4 Ways to Check Email Flow using SMTP Commands](https://medium.com/@david07russel/4-ways-to-check-email-flow-using-smtp-commands-caee57a8e68e)
-[List of All SMTP Commands and Response Codes](https://blog.mailtrap.io/smtp-commands-and-responses/)
-[ShellHacks: Command-Line Tips and Tricks](https://www.shellhacks.com/send-email-smtp-server-command-line/)
+- [4 Ways to Check Email Flow using SMTP Commands](https://medium.com/@david07russel/4-ways-to-check-email-flow-using-smtp-commands-caee57a8e68e)
+- [List of All SMTP Commands and Response Codes](https://blog.mailtrap.io/smtp-commands-and-responses/)
+- [ShellHacks: Command-Line Tips and Tricks](https://www.shellhacks.com/send-email-smtp-server-command-line/)
