@@ -1,4 +1,4 @@
-# Assignment# 2
+# Assignment #2
 
 In this task, you will be implementing a python-based simple mail client, which can send email to any recipient. Your email client should connect to a mail server and communicate using the SMTP protocol.
 
