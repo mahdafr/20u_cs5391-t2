@@ -17,11 +17,11 @@ if __name__ == '__main__':
     while '504' in msg:
         user = input('Enter your username for ' + server.get_address() + ':\t')
         pswd = input('Enter your password for ' + user + ':\t')
-        msg = server.log_in(user, pswd, auth='CRAM-MD5')
+        msg = server.log_in(user, pswd)
         print(msg)
     print('Successfully logged in to:\t' + user + ' at ' + server.get_address())
 
     # send a test email
-    server.send_email(frm='mafravi@miners.utep.edu')
+    server.send_email(frm='<mafravi@miners.utep.edu>')
 
     server.close()
