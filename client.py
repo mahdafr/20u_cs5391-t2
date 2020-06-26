@@ -4,6 +4,7 @@ import time
 import ssl
 
 END = '\r\n'
+sign = 'Mahdokht Afravi' + END
 
 
 class EmailClient:
@@ -15,52 +16,58 @@ class EmailClient:
         self.__domain = None
 
     """ Opens an internet stream to the addr:prt specified. """
-    def __start_connection(self, path_to_cas, using_tls=False):
-        # for certification
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        context.load_verify_locations(path_to_cas)
+    def __start_connection(self):
         self.__server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if using_tls:
-            # self.__respond_to('STARTTLS', 'Could not begin TLS encryption to\t' + str(self.__addr), err_code='220')
-            # self.__respond_to('EHLO ' + domain, 'Could not establish secure TLS connection to\t' + str(self.__addr))
-            self.__server = context.wrap_socket(self.__server, server_hostname=self.__addr)
         self.__server.connect((self.__addr, self.__prt))
         self.__respond_to('','Could not open connection to\t' + str(self.__addr), '220')
 
-    """ Establish the connection by sending/receiving 'hello'/authentication message. """
-    def establish_connection(self, path_to_cas, domain='mx-aol.mail.gm0.yahoodns.net', using_tls=False):
+    """ Begin communications by sending/receiving 'hello' message. """
+    def establish_connection(self, domain='mx-aol.mail.gm0.yahoodns.net', using_tls=True):
         self.__domain = domain
-        self.__start_connection(path_to_cas, using_tls)
-        self.__respond_to('EHLO ' + domain, 'Could not establish connection to\t' + str(self.__addr))   # ESMTP
+        self.__start_connection()
+        self.__respond_to('EHLO ' + self.__domain, 'Could not establish connection to\t' + str(self.__addr))   # ESMTP
+        if using_tls:
+            self.__respond_to('STARTTLS', 'Could not begin TLS encryption to\t' + str(self.__addr), exp_code='220')
+            context = ssl.create_default_context()      # allow certifications
+            context.load_default_certs()                # using default certifications in the system
+            self.__server = context.wrap_socket(self.__server, server_hostname=self.__addr)
+            self.__respond_to('EHLO ' + domain, 'Could not establish secure TLS connection to\t' + str(self.__addr))
         print('Successfully established a' + (' secure ' if using_tls else ' ') + 'connection to ' + self.__addr)
 
     """ Logs into the server using provided credentials """
     def log_in(self, user, pswd, auth='PLAIN'):
-        b64 = base64.b64encode(('\x00' + user +'\x00' + pswd).encode())
-        self.__server.send(('AUTH ' + auth + ' ').encode() + b64 + END.encode())
-        msg = self.__decode_receive()
-        if not msg:                                     # connection closed?
+        wrap = '' if auth!='PLAIN' else '\x00'
+        u64 = base64.b64encode((wrap + user + wrap).encode())
+        self.__server.send(('AUTH ' + auth + ' ').encode() + u64 + END.encode())
+        resp = self.__decode_receive()
+        if not resp:
             self.__error_report_and_quit()
-        return msg
+        print(resp)
+        if '334' not in resp:
+            self.__error_report_and_quit('Username is rejected. Try again.')
+        self.__server.send(base64.b64encode((pswd).encode()) + END.encode())
+        resp = self.__decode_receive()
+        print(resp)
+        if not resp:
+            self.__error_report_and_quit()
+        if '235' not in resp:
+            self.__error_report_and_quit('Authentication unsuccessful. Try again.')
+        print('Successfully logged in to:\t' + user + ' at ' + self.__domain)
 
     """ Send an email with a FRM, RCPT, SUBJ, and a MSG """
     def send_email(self, frm='<mmafravi@aol.com>', rcpt='<mmafravi@gmail.com>', subj="Test Email Message",
-                   msg='This is a test email.\r\nThis message was sent from a python program.'):
+                   msg='This is a test email' + END + 'Yay, your homework (maybe?) works'):
         # the sender/recipient and subject information
         self.__respond_to('MAIL FROM:' + frm, 'Sender\'s address is rejected.')
-        self.__respond_to('MAIL RCPT TO:'+rcpt, 'Recipient\'s address is rejected.')
-        self.__respond_to('DATA','Data not accepted to message.', err_code='354')
-        self.__respond_to('SUBJECT:'+subj+END, 'Data not accepted to message.')
-        # the time and the message
-        date = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
-        self.__respond_to(date, '')
-        self.__respond_to(END + msg, '')
-        self.__respond_to(END + '.', '')
-        self.__respond_to('QUIT', 'Server rejected exit command.', err_code='221')
+        self.__respond_to('RCPT TO:' + rcpt, 'Recipient\'s address is rejected.')
+        self.__respond_to('DATA', 'Cannot start message.', exp_code='354')
+        # the message
+        self.__respond_to('SUBJECT:' + subj + END + END + msg + END + END + sign + '.', '')          # end the message
         print('Message sent to\t' + rcpt)
 
     """ Close the connection. """
     def close(self):
+        self.__respond_to('QUIT', 'Server rejected exit command.', exp_code='221')
         self.__server.shutdown(socket.SHUT_RD)          # no more proc
         self.__server.close()
         print('Closed connection.')
@@ -70,15 +77,16 @@ class EmailClient:
         return self.__server.recv(buff_size).decode()   # decode from base64
 
     """ Send a message (if any), and report errors (if any) """
-    def __respond_to(self, msg, msg_on_fail, err_code='250'):
-        if msg!='':                                     # data to send
-            print('SENT:\t' + msg + END)
-            self.__server.send((msg + END).encode('utf-8'))
+    def __respond_to(self, msg, msg_on_fail, exp_code='250'):
+        if msg!='':                                     # data to send, in ASCII
+            print('SENT:\t' + str(msg))
+            msg = (msg+END).encode('ascii')
+            self.__server.send(msg)
         response = self.__decode_receive()
-        print( response )
+        print('RESP:\t' + response)
         if not response:                                # connection closed?
             self.__error_report_and_quit()
-        if err_code not in response:                    # msg not received?
+        if exp_code not in response:                    # msg not received?
             self.__error_report_and_quit(msg_on_fail)
 
     """ Report error message to console and quit program. """

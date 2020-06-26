@@ -33,6 +33,12 @@ Using sockets, connect to a popular webmail server, like AOL mail server. Then p
     - I fixed my bug in logging in by following the solution to [this page](http://shareviewsnative.blogspot.com/2012/10/501-551-heloehlo-requires-domain-address.html) to debug my `AUTH PLAIN` errors
     - I also followed the instructions in [this page](https://www.ndchost.com/wiki/mail/test-smtp-auth-telnet) to see if I can actually send an email through SMTP on the command line.
 
+### Security
+For the security aspect of this assignment, I followed these steps to allow for a secure TLS connection:
+ - using the python [ssl library](https://docs.python.org/3/library/ssl.html#module-ssl) to secure the connection with TLS encryption
+ - [this Microsoft page](https://docs.microsoft.com/en-us/dotnet/framework/wcf/feature-details/how-to-view-certificates-with-the-mmc-snap-in) to find the locations of all certificates on my system
+    - instead of hardcoding the location, I used the `def`
+
 ## Reference
 - [4 Ways to Check Email Flow using SMTP Commands](https://medium.com/@david07russel/4-ways-to-check-email-flow-using-smtp-commands-caee57a8e68e)
 - [List of All SMTP Commands and Response Codes](https://blog.mailtrap.io/smtp-commands-and-responses/)

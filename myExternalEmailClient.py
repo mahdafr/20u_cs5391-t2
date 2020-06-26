@@ -9,16 +9,12 @@ import client
 if __name__ == '__main__':
     # open the (secure) connection, using generic AOL SMTP server info
     clnt = client.EmailClient()
-    path_to_cas = input('Enter the path to the directory/file with CAs stored as PEM(s):\t')
-    clnt.establish_connection(path_to_cas, using_tls=True)
+    clnt.establish_connection()
 
     # log in to user-provided credentials
-    msg = '504'; user = None
-    while '504' in msg:         # login info is incorrect
-          user = input('Enter your username for ' + clnt.get_address() + ':\t')
-          pswd = input('Enter your password for ' + user + ':\t')
-          msg = clnt.log_in(user, pswd)
-    print('Successfully logged in to:\t' + user + ' at ' + clnt.get_domain())
+    user = input('Enter your username for ' + clnt.get_domain() + ':\t')
+    pswd = input('Enter your password for ' + user + ':\t')
+    clnt.log_in(user, pswd)
 
     # send a test email
     clnt.send_email()
