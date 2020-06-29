@@ -8,15 +8,17 @@ import client
 
 if __name__ == '__main__':
     # open the (secure) connection, using generic AOL SMTP server info
-    clnt = client.EmailClient()
-    clnt.establish_connection()
+    clnt = client.EmailClient(addr='smtp.gmail.com')
+    clnt.establish_connection(domain='dns-admin.google.com')
 
     # log in to user-provided credentials
-    user = input('Enter your username for ' + clnt.get_domain() + ':\t')
-    pswd = input('Enter your password for ' + user + ':\t')
-    clnt.log_in(user, pswd)
+    success = False
+    while not success:
+        user = input('Enter your username for ' + clnt.get_domain() + ':\t')
+        pswd = input('Enter your password for ' + user + ':\t')
+        success = clnt.log_in(user, pswd, auth='LOGIN')
 
     # send a test email
-    clnt.send_email()
+    clnt.send_email(rcpt='<mafravi@miners.utep.edu>')
 
     clnt.close()

@@ -42,17 +42,18 @@ class EmailClient:
         resp = self.__decode_receive()
         if not resp:
             self.__error_report_and_quit()
-        print(resp)
         if '334' not in resp:
-            self.__error_report_and_quit('Username is rejected. Try again.')
+            print('Username is rejected. Try again.')
+            return False
         self.__server.send(base64.b64encode((pswd).encode()) + END.encode())
         resp = self.__decode_receive()
-        print(resp)
         if not resp:
             self.__error_report_and_quit()
         if '235' not in resp:
-            self.__error_report_and_quit('Authentication unsuccessful. Try again.')
+            print('Authentication unsuccessful. Try again.')
+            return False
         print('Successfully logged in to:\t' + user + ' at ' + self.__domain)
+        return True
 
     """ Send an email with a FRM, RCPT, SUBJ, and a MSG """
     def send_email(self, frm='<mmafravi@aol.com>', rcpt='<mmafravi@gmail.com>', subj="Test Email Message",
@@ -79,11 +80,11 @@ class EmailClient:
     """ Send a message (if any), and report errors (if any) """
     def __respond_to(self, msg, msg_on_fail, exp_code='250'):
         if msg!='':                                     # data to send, in ASCII
-            print('SENT:\t' + str(msg))
+            # print('SENT:\t' + str(msg))
             msg = (msg+END).encode('ascii')
             self.__server.send(msg)
         response = self.__decode_receive()
-        print('RESP:\t' + response)
+        # print('RESP:\t' + response)
         if not response:                                # connection closed?
             self.__error_report_and_quit()
         if exp_code not in response:                    # msg not received?

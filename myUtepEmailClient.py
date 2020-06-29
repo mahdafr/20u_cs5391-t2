@@ -11,9 +11,11 @@ if __name__ == '__main__':
     clnt.establish_connection(domain='1417249971.mail.outlook.com')   # from NSLOOKUP
 
     # log in to user-provided credentials
-    user = input('Enter your username for ' + clnt.get_domain() + ':\t')
-    pswd = input('Enter your password for ' + user + ':\t')
-    clnt.log_in(user, pswd, auth='LOGIN')
+    success = False
+    while not success:
+        user = input('Enter your username for ' + clnt.get_domain() + ':\t')
+        pswd = input('Enter your password for ' + user + ':\t')
+        success = clnt.log_in(user, pswd, auth='LOGIN')
 
     # send a test email
     clnt.send_email(frm='<mafravi@miners.utep.edu>')
